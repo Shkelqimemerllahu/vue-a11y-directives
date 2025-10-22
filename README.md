@@ -147,10 +147,8 @@ export default {
   data() {
     return {
       announcement: '',
-      menuItems: [
-        { id: 1, label: 'Home', isOpen: false },
-        { id: 2, label: 'Products', isOpen: false }
-      ]
+      menuItems: ['Home', 'Products', 'About', 'Contact'],
+      currentIndex: 0
     }
   },
   computed: {
@@ -160,6 +158,19 @@ export default {
         arrowUp: () => this.navigatePrev(),
         enter: () => this.selectItem()
       }
+    }
+  },
+  methods: {
+    navigateNext() {
+      this.currentIndex = (this.currentIndex + 1) % this.menuItems.length;
+    },
+    navigatePrev() {
+      this.currentIndex = this.currentIndex === 0 
+        ? this.menuItems.length - 1 
+        : this.currentIndex - 1;
+    },
+    selectItem() {
+      console.log('Selected:', this.menuItems[this.currentIndex]);
     }
   }
 }

@@ -34,13 +34,13 @@
   "homepage": "https://github.com/shkelqimemerllahu/vue-a11y-directives#readme",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run build:types",
+    "build": "vite build",
     "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
     "build:docs": "cd docs && npm run build",
     "preview": "vite preview",
     "docs:dev": "cd docs && npm run dev",
     "lint": "eslint src --ext .js,.vue",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "vite build"
   },
   "peerDependencies": {
     "vue": "^3.0.0"
