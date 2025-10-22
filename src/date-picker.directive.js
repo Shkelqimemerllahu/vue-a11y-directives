@@ -45,43 +45,71 @@ export default {
     const doFocus = () => {
       console.log('[v-a11y-date-picker] Attempting to focus calendar');
       
-      // Element Plus handles keyboard navigation on the selected or current day cell
-      // We need to make the cell focusable AND dispatch a focus event to trigger Element Plus handlers
+      // Find the cell to focus
+      let cellToFocus = null;
+      let cellType = '';
       
       // Try to focus the selected day first (if a date is already selected)
-      const selectedDay = document.querySelector('.el-picker-panel td.is-selected .el-date-table-cell__text');
+      const selectedDay = document.querySelector('.el-picker-panel td.is-selected');
       if (selectedDay) {
-        const cell = selectedDay.closest('td');
-        cell.setAttribute('tabindex', '0');
-        cell.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused selected day cell:', cell);
-        console.log('[v-a11y-date-picker] Cell has focus:', document.activeElement === cell);
-        return true;
+        cellToFocus = selectedDay;
+        cellType = 'selected day';
       }
 
       // Fallback 1: Focus today's date if visible
-      const today = document.querySelector('.el-picker-panel td.is-today .el-date-table-cell__text');
-      if (today) {
-        const cell = today.closest('td');
-        cell.setAttribute('tabindex', '0');
-        cell.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused today cell:', cell);
-        console.log('[v-a11y-date-picker] Cell has focus:', document.activeElement === cell);
-        return true;
+      if (!cellToFocus) {
+        const today = document.querySelector('.el-picker-panel td.is-today');
+        if (today) {
+          cellToFocus = today;
+          cellType = 'today';
+        }
       }
 
       // Fallback 2: Focus the first available (non-disabled) day
-      const firstDay = document.querySelector('.el-picker-panel .el-date-table tbody td:not(.disabled):not(.is-disabled)');
-      if (firstDay) {
-        firstDay.setAttribute('tabindex', '0');
-        firstDay.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused first available day:', firstDay);
-        console.log('[v-a11y-date-picker] Cell has focus:', document.activeElement === firstDay);
-        return true;
+      if (!cellToFocus) {
+        const firstDay = document.querySelector('.el-picker-panel .el-date-table tbody td:not(.disabled):not(.is-disabled)');
+        if (firstDay) {
+          cellToFocus = firstDay;
+          cellType = 'first available day';
+        }
       }
 
-      console.log('[v-a11y-date-picker] ✗ Could not find any focusable day cell');
-      return false;
+      if (!cellToFocus) {
+        console.log('[v-a11y-date-picker] ✗ Could not find any focusable day cell');
+        return false;
+      }
+
+      // Make it focusable
+      cellToFocus.setAttribute('tabindex', '0');
+      
+      // AGGRESSIVE FOCUS: Keep trying until it actually has focus
+      // Element Plus is fighting us, so we fight back!
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const forceFocus = () => {
+        attempts++;
+        cellToFocus.focus();
+        
+        // Check if focus actually worked
+        if (document.activeElement === cellToFocus) {
+          console.log(`[v-a11y-date-picker] ✓ Successfully focused ${cellType} after ${attempts} attempt(s)`);
+          console.log('[v-a11y-date-picker] Active element:', document.activeElement);
+          return true;
+        }
+        
+        // If not focused yet and we haven't exceeded attempts, try again
+        if (attempts < maxAttempts) {
+          console.log(`[v-a11y-date-picker] Focus attempt ${attempts} failed, retrying...`);
+          setTimeout(forceFocus, 10); // Try again in 10ms
+        } else {
+          console.log(`[v-a11y-date-picker] ✗ Failed to focus ${cellType} after ${maxAttempts} attempts`);
+          console.log('[v-a11y-date-picker] Active element is:', document.activeElement);
+        }
+      };
+      
+      forceFocus();
+      return true;
     };
 
     // Function to focus calendar when it opens
