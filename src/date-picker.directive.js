@@ -36,95 +36,94 @@ export default {
     let observer = null;
     let focusTimeout = null;
 
+    // Function to actually focus the calendar (the working logic from your code)
+    const doFocus = () => {
+      console.log('[v-a11y-date-picker] Attempting to focus calendar');
+      
+      // Try to focus the selected day first
+      const selectedDay = document.querySelector('.el-picker-panel td.is-selected');
+      if (selectedDay) {
+        selectedDay.setAttribute('tabindex', '0');
+        selectedDay.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused selected day');
+        return true;
+      }
+
+      // Fallback: focus the first available day
+      const firstDay = document.querySelector('.el-picker-panel td:not(.disabled)');
+      if (firstDay) {
+        firstDay.setAttribute('tabindex', '0');
+        firstDay.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused first available day');
+        return true;
+      }
+
+      console.log('[v-a11y-date-picker] ✗ Could not find any focusable day');
+      return false;
+    };
+
     // Function to focus calendar when it opens
+    // This mimics your working code: wait for next tick, then setTimeout
     const focusCalendar = () => {
+      console.log('[v-a11y-date-picker] Calendar opened, waiting for DOM...');
+      
       // Clear any existing timeout
       if (focusTimeout) {
         clearTimeout(focusTimeout);
       }
 
-      // Use multiple checks with increasing delays to handle different rendering speeds
-      const attemptFocus = (attempt = 0) => {
-        const maxAttempts = 5;
-        const currentDelay = delay + (attempt * 50); // Increase delay with each attempt
-
+      // Mimic Vue's nextTick by using requestAnimationFrame
+      // This waits for the browser to finish rendering
+      requestAnimationFrame(() => {
+        // Then add the setTimeout like your working code
         focusTimeout = setTimeout(() => {
-          // Check if panel exists and is visible
-          const panel = document.querySelector(selectors.panel);
-          if (!panel || panel.offsetParent === null) {
-            if (attempt < maxAttempts) {
-              attemptFocus(attempt + 1);
-            }
-            return;
-          }
-
-          // Try to focus the selected day first
-          const selectedDay = document.querySelector(`${selectors.panel} ${selectors.selectedDay}`);
-          if (selectedDay) {
-            selectedDay.setAttribute('tabindex', '0');
-            selectedDay.focus();
-            return;
-          }
-
-          // Fallback: focus the first available day
-          const firstDay = document.querySelector(`${selectors.panel} ${selectors.availableDay}`);
-          if (firstDay) {
-            firstDay.setAttribute('tabindex', '0');
-            firstDay.focus();
-            return;
-          }
-
-          // If still no success and we have attempts left, try again
-          if (attempt < maxAttempts) {
-            attemptFocus(attempt + 1);
-          }
-        }, currentDelay);
-      };
-
-      attemptFocus();
+          doFocus();
+        }, delay);
+      });
     };
 
-    // Listen for input focus/click to detect when calendar opens
+    // Use MutationObserver to watch for when the calendar appears in DOM
+    // This is more reliable than click/focus events
+    const setupCalendarWatcher = () => {
+      observer = new MutationObserver((mutations) => {
+        // Check if a calendar panel appeared
+        const panel = document.querySelector('.el-picker-panel');
+        
+        if (panel && !isCalendarOpen) {
+          // Calendar just opened!
+          isCalendarOpen = true;
+          console.log('[v-a11y-date-picker] Calendar panel detected in DOM');
+          focusCalendar();
+        } else if (!panel && isCalendarOpen) {
+          // Calendar closed
+          isCalendarOpen = false;
+          console.log('[v-a11y-date-picker] Calendar closed');
+          if (focusTimeout) {
+            clearTimeout(focusTimeout);
+            focusTimeout = null;
+          }
+        }
+      });
+
+      // Watch the entire document for calendar appearing/disappearing
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      
+      console.log('[v-a11y-date-picker] Watching for calendar...');
+    };
+
+    // Start watching immediately
+    setupCalendarWatcher();
+    
+    // Also listen for input interactions as a fallback
     const inputEl = el.querySelector(selectors.input) || el;
     
     const handleInputInteraction = () => {
-      if (!isCalendarOpen) {
-        isCalendarOpen = true;
-        
-        // Wait for calendar to appear in DOM
-        const interactionTimeout = setTimeout(() => {
-          const panel = document.querySelector(selectors.panel);
-          if (panel && panel.offsetParent !== null) {
-            focusCalendar();
-            
-            // Watch for calendar close
-            observer = new MutationObserver((mutations) => {
-              const panelStillExists = document.querySelector(selectors.panel);
-              if (!panelStillExists || panelStillExists.offsetParent === null) {
-                isCalendarOpen = false;
-                if (observer) {
-                  observer.disconnect();
-                  observer = null;
-                }
-                // Clear timeout reference when closed
-                if (el.__a11yDatePickerTimeout) {
-                  clearTimeout(el.__a11yDatePickerTimeout);
-                  delete el.__a11yDatePickerTimeout;
-                }
-              }
-            });
-            
-            // Observe body for calendar removal
-            observer.observe(document.body, {
-              childList: true,
-              subtree: true
-            });
-          }
-        }, 150);
-        
-        // Store timeout reference for cleanup
-        el.__a11yDatePickerTimeout = interactionTimeout;
-      }
+      console.log('[v-a11y-date-picker] Input interaction detected');
+      // The MutationObserver will handle the actual focusing
+      // This is just a fallback trigger
     };
 
     inputEl.addEventListener('focus', handleInputInteraction);
