@@ -30,16 +30,8 @@ export default {
       }, 100);
     }
 
-    // Handle Tab key to trap focus and Escape to close
+    // Handle Tab key to trap focus
     const handleKeydown = (e) => {
-      // Handle Escape key
-      if (e.key === 'Escape' && onEscape) {
-        e.preventDefault();
-        e.stopPropagation();
-        onEscape();
-        return;
-      }
-
       // Handle Tab key
       if (e.key !== 'Tab') return;
 
@@ -61,8 +53,23 @@ export default {
       }
     };
 
+    // Handle Escape key globally for the modal
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && onEscape) {
+        e.preventDefault();
+        e.stopPropagation();
+        onEscape();
+      }
+    };
+
     el.addEventListener('keydown', handleKeydown);
     el.__handleKeydown = handleKeydown;
+    
+    // Listen for Escape on document so it works regardless of focus
+    if (onEscape) {
+      document.addEventListener('keydown', handleEscape, true);
+      el.__handleEscape = handleEscape;
+    }
   },
 
   unmounted(el) {
@@ -70,6 +77,12 @@ export default {
     if (el.__handleKeydown) {
       el.removeEventListener('keydown', el.__handleKeydown);
       delete el.__handleKeydown;
+    }
+
+    // Remove escape listener from document
+    if (el.__handleEscape) {
+      document.removeEventListener('keydown', el.__handleEscape, true);
+      delete el.__handleEscape;
     }
 
     // Restore focus to previous element
