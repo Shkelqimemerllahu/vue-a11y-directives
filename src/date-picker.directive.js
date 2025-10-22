@@ -131,9 +131,6 @@ export default {
       const handleKeyboardNav = (e) => {
         // Check if it's an arrow key
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-          // Find the currently focused cell
-          const focusedCell = document.activeElement;
-          
           // Prevent any default behavior on the table/cell
           e.preventDefault();
           
@@ -142,7 +139,6 @@ export default {
           
           // Prevent ALL click/selection events that might be triggered
           const preventAutoSelect = (event) => {
-            console.log('[DEBUG] Preventing', event.type, 'during keyboard navigation');
             event.preventDefault();
             event.stopPropagation();
             event.stopImmediatePropagation();
@@ -165,12 +161,9 @@ export default {
             });
           });
           
-          // Let Element Plus's navigation happen (it moves focus)
-          // But our preventers will stop any selection
+          // Clear the flag after Element Plus has moved focus
           setTimeout(() => {
-            // Clear the flag after Element Plus has moved focus
             calendarPanel.__a11yNavigatingWithKeyboard = false;
-            console.log('[DEBUG] Keyboard navigation complete');
           }, 50);
         }
       };
@@ -180,7 +173,6 @@ export default {
         calendarPanel.__a11yKeyboardHandlerAdded = true;
         calendarPanel.addEventListener('keydown', handleKeyboardNav, { capture: true });
         calendarPanel.__a11yKeyboardHandler = handleKeyboardNav;
-        console.log('[DEBUG] Keyboard navigation handler installed');
       }
       
       return true;

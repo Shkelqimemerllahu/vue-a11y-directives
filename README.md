@@ -119,17 +119,40 @@ Skip elements from keyboard navigation.
 ```
 
 ### 8. `v-a11y-date-picker`
-Auto-focus calendar when date picker opens - works with Element Plus, Vuetify, Ant Design, PrimeVue.
+Enhance date picker accessibility with auto-focus and keyboard navigation.
 
 ```vue
-<!-- Basic usage -->
-<el-date-picker v-a11y-date-picker v-model="date" />
+<template>
+  <!-- Apply to wrapper div, not the component itself -->
+  <div v-a11y-date-picker style="position: relative">
+    <!-- Your date picker component -->
+    <DatePickerComponent v-model="date" />
+  </div>
+</template>
+```
 
-<!-- With custom delay -->
-<el-date-picker v-a11y-date-picker="{ delay: 150 }" v-model="date" />
+**Features:**
+- Auto-focuses calendar when opened
+- Arrow keys navigate without auto-selecting
+- Enter/Space to select date
+- Works with Element Plus, Vuetify, Ant Design Vue, PrimeVue
 
-<!-- For other UI libraries -->
-<v-date-picker v-a11y-date-picker="{ panelSelector: '.v-picker' }" v-model="date" />
+**Example with Element Plus:**
+```vue
+<template>
+  <div v-a11y-date-picker style="position: relative">
+    <el-date-picker 
+      v-model="date" 
+      :teleported="false"
+      placeholder="Select date"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+const date = ref('');
+</script>
 ```
 
 ## 🎨 Real-World Examples
