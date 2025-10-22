@@ -7,12 +7,14 @@ import { getFocusableElements } from './helpers';
  * Usage:
  *   v-a11y-trap-focus
  *   v-a11y-trap-focus="{ autoFocus: true }"
+ *   v-a11y-trap-focus="{ autoFocus: true, onEscape: closeModal }"
  */
 
 export default {
   mounted(el, binding) {
     const config = binding.value || {};
     const autoFocus = config.autoFocus !== false; // default true
+    const onEscape = config.onEscape || null; // callback for escape key
     
     // Save the element that had focus before
     const previousFocus = document.activeElement;
@@ -28,8 +30,17 @@ export default {
       }, 100);
     }
 
-    // Handle Tab key to trap focus
+    // Handle Tab key to trap focus and Escape to close
     const handleKeydown = (e) => {
+      // Handle Escape key
+      if (e.key === 'Escape' && onEscape) {
+        e.preventDefault();
+        e.stopPropagation();
+        onEscape();
+        return;
+      }
+
+      // Handle Tab key
       if (e.key !== 'Tab') return;
 
       const focusable = getFocusableElements(el);
