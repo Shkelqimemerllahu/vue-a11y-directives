@@ -11,7 +11,10 @@
 
 export default {
   mounted(el, binding) {
+    console.log('[v-a11y-date-picker] DIRECTIVE MOUNTED on element:', el);
+    
     const config = binding.value || {};
+    console.log('[v-a11y-date-picker] Config:', config);
     
     // Configurable delay (default 100ms, can be overridden)
     const delay = config.delay || 100;
