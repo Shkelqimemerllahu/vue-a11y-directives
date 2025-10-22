@@ -12,6 +12,8 @@
 export default {
   mounted(el, binding) {
     console.log('[v-a11y-date-picker] DIRECTIVE MOUNTED on element:', el);
+    console.log('[v-a11y-date-picker] Element tag:', el.tagName);
+    console.log('[v-a11y-date-picker] Element classes:', el.className);
     
     const config = binding.value || {};
     console.log('[v-a11y-date-picker] Config:', config);
@@ -120,8 +122,22 @@ export default {
     // Start watching immediately
     setupCalendarWatcher();
     
-    // Also listen for input interactions as a fallback
-    const inputEl = el.querySelector(selectors.input) || el;
+    // Find the actual input element - search deeper for Vue components
+    const findInput = () => {
+      // First try direct query
+      let inputEl = el.querySelector(selectors.input);
+      
+      // If not found and el is a Vue component wrapper, search all children
+      if (!inputEl) {
+        const allInputs = el.querySelectorAll('input');
+        inputEl = allInputs[0]; // Get first input
+      }
+      
+      console.log('[v-a11y-date-picker] Found input element:', inputEl);
+      return inputEl || el;
+    };
+    
+    const inputEl = findInput();
     
     const handleInputInteraction = () => {
       console.log('[v-a11y-date-picker] Input interaction detected');
