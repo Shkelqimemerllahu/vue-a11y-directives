@@ -45,25 +45,35 @@ export default {
     const doFocus = () => {
       console.log('[v-a11y-date-picker] Attempting to focus calendar');
       
-      // Try to focus the selected day first
-      const selectedDay = document.querySelector('.el-picker-panel td.is-selected');
-      if (selectedDay) {
-        selectedDay.setAttribute('tabindex', '0');
-        selectedDay.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused selected day');
+      // Element Plus uses a date table that needs to be focused for arrow keys to work
+      // We need to focus the table body, not individual cells
+      const dateTable = document.querySelector('.el-picker-panel .el-date-table tbody');
+      if (dateTable) {
+        dateTable.setAttribute('tabindex', '0');
+        dateTable.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused date table (arrow keys enabled)');
         return true;
       }
 
-      // Fallback: focus the first available day
-      const firstDay = document.querySelector('.el-picker-panel td:not(.disabled)');
-      if (firstDay) {
-        firstDay.setAttribute('tabindex', '0');
-        firstDay.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused first available day');
+      // Fallback 1: Try the date table itself
+      const table = document.querySelector('.el-picker-panel .el-date-table');
+      if (table) {
+        table.setAttribute('tabindex', '0');
+        table.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused date table element');
         return true;
       }
 
-      console.log('[v-a11y-date-picker] ✗ Could not find any focusable day');
+      // Fallback 2: Try the picker panel
+      const panel = document.querySelector('.el-picker-panel');
+      if (panel) {
+        panel.setAttribute('tabindex', '0');
+        panel.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused picker panel');
+        return true;
+      }
+
+      console.log('[v-a11y-date-picker] ✗ Could not find focusable calendar element');
       return false;
     };
 
