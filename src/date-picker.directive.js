@@ -42,15 +42,42 @@ export default {
     let focusTimeout = null;
 
     // Function to actually focus the calendar (the working logic from your code)
-    const doFocus = () => {
-      console.log('[v-a11y-date-picker] Attempting to focus calendar');
+    const doFocus = (inputElement) => {
+      console.log('[v-a11y-date-picker] Attempting to focus calendar for input:', inputElement.id);
       
-      // Find the cell to focus
+      // CRITICAL: Find the calendar panel that belongs to THIS specific input
+      // Element Plus uses aria-controls to link input to its calendar
+      const ariaControlsId = inputElement.getAttribute('aria-controls');
+      let calendarPanel = null;
+      
+      if (ariaControlsId) {
+        calendarPanel = document.getElementById(ariaControlsId);
+        console.log('[v-a11y-date-picker] Found calendar panel by aria-controls:', ariaControlsId);
+      }
+      
+      // Fallback: find the calendar panel that's currently visible
+      if (!calendarPanel) {
+        const allPanels = document.querySelectorAll('.el-picker-panel');
+        for (const panel of allPanels) {
+          if (panel.offsetParent !== null) { // Check if visible
+            calendarPanel = panel;
+            console.log('[v-a11y-date-picker] Found visible calendar panel');
+            break;
+          }
+        }
+      }
+      
+      if (!calendarPanel) {
+        console.log('[v-a11y-date-picker] ✗ Could not find calendar panel');
+        return false;
+      }
+      
+      // Now find the cell to focus WITHIN this specific calendar panel
       let cellToFocus = null;
       let cellType = '';
       
       // Try to focus the selected day first (if a date is already selected)
-      const selectedDay = document.querySelector('.el-picker-panel td.is-selected');
+      const selectedDay = calendarPanel.querySelector('td.is-selected');
       if (selectedDay) {
         cellToFocus = selectedDay;
         cellType = 'selected day';
@@ -58,7 +85,7 @@ export default {
 
       // Fallback 1: Focus today's date if visible
       if (!cellToFocus) {
-        const today = document.querySelector('.el-picker-panel td.is-today');
+        const today = calendarPanel.querySelector('td.is-today');
         if (today) {
           cellToFocus = today;
           cellType = 'today';
@@ -67,7 +94,7 @@ export default {
 
       // Fallback 2: Focus the first available (non-disabled) day
       if (!cellToFocus) {
-        const firstDay = document.querySelector('.el-picker-panel .el-date-table tbody td:not(.disabled):not(.is-disabled)');
+        const firstDay = calendarPanel.querySelector('.el-date-table tbody td:not(.disabled):not(.is-disabled)');
         if (firstDay) {
           cellToFocus = firstDay;
           cellType = 'first available day';
@@ -114,7 +141,7 @@ export default {
 
     // Function to focus calendar when it opens
     // This mimics your working code: wait for next tick, then setTimeout
-    const focusCalendar = () => {
+    const focusCalendar = (inputElement) => {
       console.log('[v-a11y-date-picker] Calendar opened, waiting for DOM...');
       
       // Clear any existing timeout
@@ -127,14 +154,14 @@ export default {
       requestAnimationFrame(() => {
         // Then add the setTimeout like your working code
         focusTimeout = setTimeout(() => {
-          doFocus();
+          doFocus(inputElement);
         }, delay);
       });
     };
 
     // Use MutationObserver to watch for when the calendar appears in DOM
     // This is more reliable than click/focus events
-    const setupCalendarWatcher = () => {
+    const setupCalendarWatcher = (inputElement) => {
       observer = new MutationObserver((mutations) => {
         // Check if a calendar panel appeared
         const panel = document.querySelector('.el-picker-panel');
@@ -143,7 +170,7 @@ export default {
           // Calendar just opened!
           isCalendarOpen = true;
           console.log('[v-a11y-date-picker] Calendar panel detected in DOM');
-          focusCalendar();
+          focusCalendar(inputElement);
         } else if (!panel && isCalendarOpen) {
           // Calendar closed
           isCalendarOpen = false;
@@ -163,9 +190,6 @@ export default {
       
       console.log('[v-a11y-date-picker] Watching for calendar...');
     };
-
-    // Start watching immediately
-    setupCalendarWatcher();
     
     // Find the actual input element - search deeper for Vue components
     const findInput = () => {
@@ -183,6 +207,9 @@ export default {
     };
     
     const inputEl = findInput();
+    
+    // Start watching immediately with the input element reference
+    setupCalendarWatcher(inputEl);
     
     const handleInputInteraction = () => {
       console.log('[v-a11y-date-picker] Input interaction detected');
@@ -215,7 +242,8 @@ export default {
             
             if (isExpanded) {
               // Calendar is now open! This is the perfect timing
-              focusCalendar();
+              // Pass the inputEl so we can find the correct calendar panel
+              focusCalendar(inputEl);
             }
           }
         });
