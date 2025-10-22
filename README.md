@@ -4,7 +4,7 @@ A comprehensive collection of Vue 3 directives for building accessible web appli
 
 ## 🚀 Features
 
-- **7 Powerful Directives** for complete accessibility control
+- **8 Powerful Directives** for complete accessibility control
 - **Zero Dependencies** - Lightweight and performant
 - **TypeScript Support** - Full type definitions included
 - **WCAG Compliant** - Follow web accessibility standards
@@ -53,7 +53,7 @@ Auto-focus elements with conditional logic.
 
 ```vue
 <input v-a11y-focus />
-<input v-a11y-focus="isEditing" />
+<input v-a11y-focus="200" />  <!-- with 200ms delay -->
 ```
 
 ### 2. `v-a11y-keyboard`
@@ -86,10 +86,10 @@ Screen reader announcements.
 ```
 
 ### 5. `v-a11y-trap-focus`
-Trap focus within modals/dialogs.
+Trap focus within modals/dialogs with Escape key support.
 
 ```vue
-<div v-a11y-trap-focus="isModalOpen">
+<div v-a11y-trap-focus="{ onEscape: closeModal, autoFocus: false }">
   <!-- Focus stays within this container -->
 </div>
 ```
@@ -116,6 +116,13 @@ Skip elements from keyboard navigation.
 
 <!-- Block all interactions -->
 <div v-a11y-skip.noInteraction="isProcessing">Processing...</div>
+```
+
+### 8. `v-a11y-date-picker`
+Auto-focus calendar when date picker opens (Element Plus, Vuetify, etc).
+
+```vue
+<el-date-picker v-a11y-date-picker v-model="date" />
 ```
 
 ## 🎨 Real-World Examples

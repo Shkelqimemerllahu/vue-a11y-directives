@@ -13,6 +13,7 @@ import announceDirective from './announce.directive';
 import skipLinkDirective from './skip-link.directive';
 import skipDirective from './skip.directive';
 import ariaDirective from './aria.directive';
+import datePickerDirective from './date-picker.directive';
 
 // Export individual directives
 export {
@@ -22,7 +23,8 @@ export {
   announceDirective,
   skipLinkDirective,
   skipDirective,
-  ariaDirective
+  ariaDirective,
+  datePickerDirective
 };
 
 // Export helpers
@@ -36,7 +38,8 @@ export const a11yDirectives = {
   'a11y-announce': announceDirective,
   'a11y-skip-link': skipLinkDirective,
   'a11y-skip': skipDirective,
-  'a11y-aria': ariaDirective
+  'a11y-aria': ariaDirective,
+  'a11y-date-picker': datePickerDirective
 };
 
 /**
