@@ -27,12 +27,6 @@ export default {
     if (!isNaturallyFocusable) {
       el.setAttribute('tabindex', '0');
       el.__a11yFocusAddedTabindex = true; // Track that we added it
-      
-      // Add role="button" if element has click handler and no role
-      if (!el.hasAttribute('role') && el.onclick) {
-        el.setAttribute('role', 'button');
-        el.__a11yFocusAddedRole = true;
-      }
     }
 
     setTimeout(() => {
@@ -52,12 +46,6 @@ export default {
     if (el.__a11yFocusAddedTabindex) {
       el.removeAttribute('tabindex');
       delete el.__a11yFocusAddedTabindex;
-    }
-    
-    // Clean up role if we added it
-    if (el.__a11yFocusAddedRole) {
-      el.removeAttribute('role');
-      delete el.__a11yFocusAddedRole;
     }
   }
 };
