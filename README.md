@@ -149,6 +149,11 @@ const date = ref('');
 **More Examples:**
 
 ```vue
+<!-- Element Plus -->
+<div v-a11y-date-picker style="position: relative">
+  <el-date-picker v-model="date" :teleported="false" />
+</div>
+
 <!-- Vuetify -->
 <div v-a11y-date-picker style="position: relative">
   <v-date-picker v-model="date" />
