@@ -45,35 +45,42 @@ export default {
     const doFocus = () => {
       console.log('[v-a11y-date-picker] Attempting to focus calendar');
       
-      // Element Plus uses a date table that needs to be focused for arrow keys to work
-      // We need to focus the table body, not individual cells
-      const dateTable = document.querySelector('.el-picker-panel .el-date-table tbody');
-      if (dateTable) {
-        dateTable.setAttribute('tabindex', '0');
-        dateTable.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused date table (arrow keys enabled)');
+      // Element Plus handles keyboard navigation on the selected or current day cell
+      // We need to make the cell focusable AND dispatch a focus event to trigger Element Plus handlers
+      
+      // Try to focus the selected day first (if a date is already selected)
+      const selectedDay = document.querySelector('.el-picker-panel td.is-selected .el-date-table-cell__text');
+      if (selectedDay) {
+        const cell = selectedDay.closest('td');
+        cell.setAttribute('tabindex', '0');
+        cell.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused selected day cell:', cell);
+        console.log('[v-a11y-date-picker] Cell has focus:', document.activeElement === cell);
         return true;
       }
 
-      // Fallback 1: Try the date table itself
-      const table = document.querySelector('.el-picker-panel .el-date-table');
-      if (table) {
-        table.setAttribute('tabindex', '0');
-        table.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused date table element');
+      // Fallback 1: Focus today's date if visible
+      const today = document.querySelector('.el-picker-panel td.is-today .el-date-table-cell__text');
+      if (today) {
+        const cell = today.closest('td');
+        cell.setAttribute('tabindex', '0');
+        cell.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused today cell:', cell);
+        console.log('[v-a11y-date-picker] Cell has focus:', document.activeElement === cell);
         return true;
       }
 
-      // Fallback 2: Try the picker panel
-      const panel = document.querySelector('.el-picker-panel');
-      if (panel) {
-        panel.setAttribute('tabindex', '0');
-        panel.focus();
-        console.log('[v-a11y-date-picker] ✓ Focused picker panel');
+      // Fallback 2: Focus the first available (non-disabled) day
+      const firstDay = document.querySelector('.el-picker-panel .el-date-table tbody td:not(.disabled):not(.is-disabled)');
+      if (firstDay) {
+        firstDay.setAttribute('tabindex', '0');
+        firstDay.focus();
+        console.log('[v-a11y-date-picker] ✓ Focused first available day:', firstDay);
+        console.log('[v-a11y-date-picker] Cell has focus:', document.activeElement === firstDay);
         return true;
       }
 
-      console.log('[v-a11y-date-picker] ✗ Could not find focusable calendar element');
+      console.log('[v-a11y-date-picker] ✗ Could not find any focusable day cell');
       return false;
     };
 
