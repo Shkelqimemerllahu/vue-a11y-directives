@@ -1,0 +1,60 @@
+{
+  "name": "vue-a11y-directives",
+  "version": "1.0.0",
+  "description": "A comprehensive set of Vue 3 directives for building accessible web applications with WCAG compliance",
+  "main": "dist/vue-a11y-directives.cjs.js",
+  "module": "dist/vue-a11y-directives.esm.js",
+  "unpkg": "dist/vue-a11y-directives.min.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "accessibility",
+    "a11y",
+    "directives",
+    "wcag",
+    "aria",
+    "focus-management",
+    "keyboard-navigation",
+    "screen-reader"
+  ],
+  "author": "Shkelqim Emerllahu",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shkelqimemerllahu/vue-a11y-directives"
+  },
+  "bugs": {
+    "url": "https://github.com/shkelqimemerllahu/vue-a11y-directives/issues"
+  },
+  "homepage": "https://github.com/shkelqimemerllahu/vue-a11y-directives#readme",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run build:types",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "build:docs": "cd docs && npm run build",
+    "preview": "vite preview",
+    "docs:dev": "cd docs && npm run dev",
+    "lint": "eslint src --ext .js,.vue",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^5.0.0",
+    "vue": "^3.4.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/vue-a11y-directives.esm.js",
+      "require": "./dist/vue-a11y-directives.cjs.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  }
+}
