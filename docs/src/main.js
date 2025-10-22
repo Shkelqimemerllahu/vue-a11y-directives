@@ -14,6 +14,7 @@ import AnnounceDirective from './pages/directives/AnnounceDirective.vue';
 import AriaDirective from './pages/directives/AriaDirective.vue';
 import SkipLinkDirective from './pages/directives/SkipLinkDirective.vue';
 import SkipDirective from './pages/directives/SkipDirective.vue';
+import DatePickerDirective from './pages/directives/DatePickerDirective.vue';
 import Examples from './pages/Examples.vue';
 import ComplexScenarios from './pages/ComplexScenarios.vue';
 import ScenariosDocumentation from './pages/ScenariosDocumentation.vue';
@@ -29,6 +30,7 @@ const routes = [
   { path: '/directives/aria', component: AriaDirective },
   { path: '/directives/skip-link', component: SkipLinkDirective },
   { path: '/directives/skip', component: SkipDirective },
+  { path: '/directives/date-picker', component: DatePickerDirective },
   { path: '/examples', component: Examples },
   { path: '/complex-scenarios', component: ComplexScenarios },
   { path: '/scenarios-documentation', component: ScenariosDocumentation }

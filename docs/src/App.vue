@@ -42,6 +42,7 @@
             <router-link to="/directives/aria" class="nav-item">v-a11y-aria</router-link>
             <router-link to="/directives/skip-link" class="nav-item">v-a11y-skip-link</router-link>
             <router-link to="/directives/skip" class="nav-item">v-a11y-skip</router-link>
+            <router-link to="/directives/date-picker" class="nav-item">v-a11y-date-picker</router-link>
           </div>
 
           <div class="nav-section">
