@@ -104,17 +104,7 @@ export default {
       // Make it focusable
       cellToFocus.setAttribute('tabindex', '0');
       
-      // Prevent click event on the cell when focusing programmatically
-      // This ensures focus only, not selection (user must press Enter/Space to select)
-      const preventClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        cellToFocus.removeEventListener('click', preventClick);
-      };
-      
-      cellToFocus.addEventListener('click', preventClick, { once: true, capture: true });
-      
-      // Keep trying until it actually has focus
+      // Just focus the cell, keyboard navigation will be handled separately
       let attempts = 0;
       const maxAttempts = 10;
       
@@ -124,23 +114,54 @@ export default {
         
         // Check if focus actually worked
         if (document.activeElement === cellToFocus) {
-          // Remove the click preventer after a short delay
-          setTimeout(() => {
-            cellToFocus.removeEventListener('click', preventClick);
-          }, 100);
           return true;
         }
         
         // If not focused yet and we haven't exceeded attempts, try again
         if (attempts < maxAttempts) {
           setTimeout(forceFocus, 10); // Try again in 10ms
-        } else {
-          // Cleanup if we failed
-          cellToFocus.removeEventListener('click', preventClick);
         }
       };
       
       forceFocus();
+      
+      // Setup keyboard navigation handler on the calendar panel
+      // This prevents auto-selection when using arrow keys
+      if (!calendarPanel.__a11yKeyboardHandlerAdded) {
+        calendarPanel.__a11yKeyboardHandlerAdded = true;
+        
+        const handleKeyboardNav = (e) => {
+          // Check if it's an arrow key
+          if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            // Mark that we're navigating with keyboard
+            calendarPanel.__a11yNavigatingWithKeyboard = true;
+            
+            // Prevent any click events that might be triggered
+            const preventClickDuringNav = (clickEvent) => {
+              if (calendarPanel.__a11yNavigatingWithKeyboard) {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                clickEvent.stopImmediatePropagation();
+              }
+            };
+            
+            // Add click preventers
+            const eventTypes = ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup'];
+            eventTypes.forEach(eventType => {
+              calendarPanel.addEventListener(eventType, preventClickDuringNav, { capture: true, once: true });
+            });
+            
+            // Clear the flag after a short delay
+            setTimeout(() => {
+              calendarPanel.__a11yNavigatingWithKeyboard = false;
+            }, 100);
+          }
+        };
+        
+        calendarPanel.addEventListener('keydown', handleKeyboardNav);
+        calendarPanel.__a11yKeyboardHandler = handleKeyboardNav;
+      }
+      
       return true;
     };
 
