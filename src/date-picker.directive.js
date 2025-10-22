@@ -201,24 +201,38 @@ export default {
     };
     inputEl.addEventListener('keydown', handleKeydown);
 
-    // Also try to hook into visible-change event if using Element Plus
-    // This provides a more reliable way to detect calendar open
-    if (binding.instance && binding.instance.$refs) {
-      const componentInstance = binding.instance;
-      const originalVisibleChange = componentInstance.visibleChange;
+    // CRITICAL: Hook into Element Plus's visible-change event
+    // This is the ONLY reliable way - it fires at the exact right moment
+    // We need to add an event listener to the input's aria-expanded changes
+    // or better yet, use MutationObserver on aria-expanded attribute
+    
+    const watchAriaExpanded = () => {
+      const ariaObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'aria-expanded') {
+            const isExpanded = inputEl.getAttribute('aria-expanded') === 'true';
+            console.log('[v-a11y-date-picker] aria-expanded changed to:', isExpanded);
+            
+            if (isExpanded) {
+              // Calendar is now open! This is the perfect timing
+              focusCalendar();
+            }
+          }
+        });
+      });
       
-      // Monkey patch the visible-change handler if it exists
-      componentInstance.visibleChange = (visible) => {
-        if (visible) {
-          focusCalendar();
-        }
-        if (originalVisibleChange) {
-          originalVisibleChange(visible);
-        }
-      };
+      ariaObserver.observe(inputEl, {
+        attributes: true,
+        attributeFilter: ['aria-expanded']
+      });
       
-      el.__a11yDatePickerOriginalHandler = originalVisibleChange;
-    }
+      console.log('[v-a11y-date-picker] Watching aria-expanded attribute on input');
+      
+      return ariaObserver;
+    };
+    
+    const ariaObserver = watchAriaExpanded();
+    el.__a11yDatePickerAriaObserver = ariaObserver;
 
     // Store references for cleanup
     el.__a11yDatePickerInput = inputEl;
@@ -245,14 +259,13 @@ export default {
       }
     }
 
-    // Disconnect observer
+    // Disconnect observers
     if (el.__a11yDatePickerObserver) {
       el.__a11yDatePickerObserver.disconnect();
     }
-
-    // Restore original handler if we patched it
-    if (el.__a11yDatePickerOriginalHandler && binding.instance) {
-      binding.instance.visibleChange = el.__a11yDatePickerOriginalHandler;
+    
+    if (el.__a11yDatePickerAriaObserver) {
+      el.__a11yDatePickerAriaObserver.disconnect();
     }
 
     // Cleanup references
@@ -260,7 +273,7 @@ export default {
     delete el.__a11yDatePickerFocusHandler;
     delete el.__a11yDatePickerKeyHandler;
     delete el.__a11yDatePickerObserver;
+    delete el.__a11yDatePickerAriaObserver;
     delete el.__a11yDatePickerTimeout;
-    delete el.__a11yDatePickerOriginalHandler;
   }
 };
