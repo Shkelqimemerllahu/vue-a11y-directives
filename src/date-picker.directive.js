@@ -127,39 +127,60 @@ export default {
       
       // Setup keyboard navigation handler on the calendar panel
       // This prevents auto-selection when using arrow keys
+      // We need to capture the keydown BEFORE Element Plus processes it
+      const handleKeyboardNav = (e) => {
+        // Check if it's an arrow key
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          // Find the currently focused cell
+          const focusedCell = document.activeElement;
+          
+          // Prevent any default behavior on the table/cell
+          e.preventDefault();
+          
+          // Mark that we're navigating with keyboard
+          calendarPanel.__a11yNavigatingWithKeyboard = true;
+          
+          // Prevent ALL click/selection events that might be triggered
+          const preventAutoSelect = (event) => {
+            console.log('[DEBUG] Preventing', event.type, 'during keyboard navigation');
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            return false;
+          };
+          
+          // Add preventers for all possible selection events
+          const eventTypes = ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup', 'touchstart', 'touchend'];
+          
+          // Add to the entire calendar panel
+          eventTypes.forEach(eventType => {
+            calendarPanel.addEventListener(eventType, preventAutoSelect, { capture: true, once: true });
+          });
+          
+          // Also add to all table cells to be extra safe
+          const allCells = calendarPanel.querySelectorAll('td');
+          allCells.forEach(cell => {
+            eventTypes.forEach(eventType => {
+              cell.addEventListener(eventType, preventAutoSelect, { capture: true, once: true });
+            });
+          });
+          
+          // Let Element Plus's navigation happen (it moves focus)
+          // But our preventers will stop any selection
+          setTimeout(() => {
+            // Clear the flag after Element Plus has moved focus
+            calendarPanel.__a11yNavigatingWithKeyboard = false;
+            console.log('[DEBUG] Keyboard navigation complete');
+          }, 50);
+        }
+      };
+      
+      // Add keyboard handler with capture: true to intercept BEFORE Element Plus
       if (!calendarPanel.__a11yKeyboardHandlerAdded) {
         calendarPanel.__a11yKeyboardHandlerAdded = true;
-        
-        const handleKeyboardNav = (e) => {
-          // Check if it's an arrow key
-          if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-            // Mark that we're navigating with keyboard
-            calendarPanel.__a11yNavigatingWithKeyboard = true;
-            
-            // Prevent any click events that might be triggered
-            const preventClickDuringNav = (clickEvent) => {
-              if (calendarPanel.__a11yNavigatingWithKeyboard) {
-                clickEvent.preventDefault();
-                clickEvent.stopPropagation();
-                clickEvent.stopImmediatePropagation();
-              }
-            };
-            
-            // Add click preventers
-            const eventTypes = ['click', 'mousedown', 'mouseup', 'pointerdown', 'pointerup'];
-            eventTypes.forEach(eventType => {
-              calendarPanel.addEventListener(eventType, preventClickDuringNav, { capture: true, once: true });
-            });
-            
-            // Clear the flag after a short delay
-            setTimeout(() => {
-              calendarPanel.__a11yNavigatingWithKeyboard = false;
-            }, 100);
-          }
-        };
-        
-        calendarPanel.addEventListener('keydown', handleKeyboardNav);
+        calendarPanel.addEventListener('keydown', handleKeyboardNav, { capture: true });
         calendarPanel.__a11yKeyboardHandler = handleKeyboardNav;
+        console.log('[DEBUG] Keyboard navigation handler installed');
       }
       
       return true;
