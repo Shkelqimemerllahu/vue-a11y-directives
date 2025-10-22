@@ -14,6 +14,7 @@ A comprehensive collection of Vue 3 directives for building accessible web appli
    - [v-a11y-announce](#4-v-a11y-announce)
    - [v-a11y-aria](#5-v-a11y-aria)
    - [v-a11y-skip-link](#6-v-a11y-skip-link)
+   - [v-a11y-date-picker](#7-v-a11y-date-picker)
 5. [Real-World Examples](#real-world-examples)
 6. [Helper Functions](#helper-functions)
 7. [Best Practices](#best-practices)
@@ -62,6 +63,11 @@ app.directive('a11y-trap-focus', trapFocusDirective);
   <div v-a11y-keyboard="{ enter: true, escape: handleEscape }">
     Press Enter or Escape
   </div>
+  
+  <!-- Date picker with auto-focus calendar -->
+  <div v-a11y-date-picker>
+    <DatePicker v-model="date" />
+  </div>
 </template>
 ```
 
@@ -77,6 +83,7 @@ app.directive('a11y-trap-focus', trapFocusDirective);
 | `v-a11y-announce` | Screen reader announcements | Status updates, errors, notifications |
 | `v-a11y-aria` | Dynamic ARIA attributes | All interactive elements |
 | `v-a11y-skip-link` | Skip navigation links | Main navigation, sidebars |
+| `v-a11y-date-picker` | Auto-focus date picker calendars | Element Plus, Vuetify, Ant Design date pickers |
 
 ---
 
@@ -986,6 +993,112 @@ Create accessible skip navigation links.
 ```
 
 **Use Case:** Complex layouts, dashboards, multi-section pages
+
+---
+
+### 7. v-a11y-date-picker
+
+Auto-focus date picker calendars for immediate keyboard navigation. Works with Element Plus, Vuetify, Ant Design, and other UI libraries.
+
+#### **Scenario 7.1: Basic Date Picker**
+```vue
+<template>
+  <!-- Wrap your date picker component in a container with the directive -->
+  <div v-a11y-date-picker style="position: relative">
+    <label>Select Date</label>
+    <YourDatePicker v-model="selectedDate" />
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+const selectedDate = ref('');
+</script>
+```
+
+**Use Case:** Form inputs, booking systems, scheduling apps
+
+**What it does:**
+- Automatically focuses the calendar table when opened
+- Enables immediate arrow key navigation (↑↓←→) to FOCUS dates
+- User presses Enter or Space to SELECT the focused date
+- Focuses selected date, today, or first available day
+- Works with multiple date pickers on the same page
+
+---
+
+#### **Scenario 7.2: Custom Delay Configuration**
+```vue
+<template>
+  <div v-a11y-date-picker="{ delay: 150 }">
+    <YourDatePicker v-model="date" />
+  </div>
+</template>
+```
+
+**Use Case:** Slow animations, custom transitions
+
+**Note:** Adjust delay if calendar takes longer to render
+
+---
+
+#### **Scenario 7.3: Multiple Date Pickers**
+```vue
+<template>
+  <div class="date-range">
+    <!-- Start date -->
+    <div v-a11y-date-picker style="position: relative">
+      <label>Start Date</label>
+      <DatePicker v-model="startDate" />
+    </div>
+    
+    <!-- End date -->
+    <div v-a11y-date-picker style="position: relative">
+      <label>End Date</label>
+      <DatePicker v-model="endDate" />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+const startDate = ref('');
+const endDate = ref('');
+</script>
+```
+
+**Use Case:** Date ranges, booking systems, report filters
+
+**Important Notes:**
+- Apply directive to a **wrapper element**, not directly on the date picker component
+- Each directive instance works independently
+- Supports teleported and non-teleported calendars
+- Arrow keys FOCUS dates, Enter/Space SELECTS the focused date
+
+---
+
+#### **Scenario 7.4: Custom Selectors for Different Libraries**
+```vue
+<template>
+  <!-- For UI libraries with different DOM structures -->
+  <div v-a11y-date-picker="{ 
+    panelSelector: '.your-calendar-panel',
+    selectedSelector: 'td.selected',
+    availableSelector: 'td:not(.disabled)'
+  }">
+    <CustomDatePicker v-model="date" />
+  </div>
+</template>
+```
+
+**Use Case:** Custom date pickers, non-standard UI libraries
+
+**Configuration Options:**
+- `delay`: Time to wait before focusing (default: 100ms)
+- `panelSelector`: CSS selector for calendar panel
+- `selectedSelector`: CSS selector for selected date cell
+- `availableSelector`: CSS selector for available date cells
+- `inputSelector`: CSS selector for date picker input field
 
 ---
 

@@ -50,7 +50,13 @@
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">📦</div>
+        <div class="feature-icon">�</div>
+        <h3>Date Pickers</h3>
+        <p>Auto-focus date picker calendars for immediate keyboard navigation with arrow keys.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">�📦</div>
         <h3>Zero Dependencies</h3>
         <p>Lightweight, tree-shakeable, and built specifically for Vue 3.</p>
       </div>
@@ -65,7 +71,7 @@
 
     <div class="stats">
       <div class="stat">
-        <div class="stat-number">6</div>
+        <div class="stat-number">8</div>
         <div class="stat-label">Directives</div>
       </div>
       <div class="stat">

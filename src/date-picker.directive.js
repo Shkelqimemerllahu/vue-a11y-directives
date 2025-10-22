@@ -3,20 +3,21 @@
  * Enhances date picker accessibility by auto-focusing calendar when opened
  * Works with Element Plus, Vuetify, Ant Design, and other UI libraries
  * 
+ * Arrow keys FOCUS dates, Enter/Space SELECTS the focused date
+ * 
  * Usage:
- *   <el-date-picker v-a11y-date-picker v-model="date" />
- *   <el-date-picker v-a11y-date-picker="{ delay: 150 }" v-model="date" />
- *   <v-date-picker v-a11y-date-picker="{ panelSelector: '.v-picker' }" v-model="date" />
+ *   <div v-a11y-date-picker>
+ *     <DatePicker v-model="date" />
+ *   </div>
+ *   
+ *   <div v-a11y-date-picker="{ delay: 150 }">
+ *     <DatePicker v-model="date" />
+ *   </div>
  */
 
 export default {
   mounted(el, binding) {
-    console.log('[v-a11y-date-picker] DIRECTIVE MOUNTED on element:', el);
-    console.log('[v-a11y-date-picker] Element tag:', el.tagName);
-    console.log('[v-a11y-date-picker] Element classes:', el.className);
-    
     const config = binding.value || {};
-    console.log('[v-a11y-date-picker] Config:', config);
     
     // Configurable delay (default 100ms, can be overridden)
     const delay = config.delay || 100;
@@ -41,10 +42,8 @@ export default {
     let observer = null;
     let focusTimeout = null;
 
-    // Function to actually focus the calendar (the working logic from your code)
+    // Function to actually focus the calendar
     const doFocus = (inputElement) => {
-      console.log('[v-a11y-date-picker] Attempting to focus calendar for input:', inputElement.id);
-      
       // CRITICAL: Find the calendar panel that belongs to THIS specific input
       // Element Plus uses aria-controls to link input to its calendar
       const ariaControlsId = inputElement.getAttribute('aria-controls');
@@ -52,7 +51,6 @@ export default {
       
       if (ariaControlsId) {
         calendarPanel = document.getElementById(ariaControlsId);
-        console.log('[v-a11y-date-picker] Found calendar panel by aria-controls:', ariaControlsId);
       }
       
       // Fallback: find the calendar panel that's currently visible
@@ -61,14 +59,12 @@ export default {
         for (const panel of allPanels) {
           if (panel.offsetParent !== null) { // Check if visible
             calendarPanel = panel;
-            console.log('[v-a11y-date-picker] Found visible calendar panel');
             break;
           }
         }
       }
       
       if (!calendarPanel) {
-        console.log('[v-a11y-date-picker] ✗ Could not find calendar panel');
         return false;
       }
       
@@ -102,36 +98,45 @@ export default {
       }
 
       if (!cellToFocus) {
-        console.log('[v-a11y-date-picker] ✗ Could not find any focusable day cell');
         return false;
       }
 
       // Make it focusable
       cellToFocus.setAttribute('tabindex', '0');
       
-      // AGGRESSIVE FOCUS: Keep trying until it actually has focus
-      // Element Plus is fighting us, so we fight back!
+      // Prevent click event on the cell when focusing programmatically
+      // This ensures focus only, not selection (user must press Enter/Space to select)
+      const preventClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        cellToFocus.removeEventListener('click', preventClick);
+      };
+      
+      cellToFocus.addEventListener('click', preventClick, { once: true, capture: true });
+      
+      // Keep trying until it actually has focus
       let attempts = 0;
       const maxAttempts = 10;
       
       const forceFocus = () => {
         attempts++;
-        cellToFocus.focus();
+        cellToFocus.focus({ preventScroll: true });
         
         // Check if focus actually worked
         if (document.activeElement === cellToFocus) {
-          console.log(`[v-a11y-date-picker] ✓ Successfully focused ${cellType} after ${attempts} attempt(s)`);
-          console.log('[v-a11y-date-picker] Active element:', document.activeElement);
+          // Remove the click preventer after a short delay
+          setTimeout(() => {
+            cellToFocus.removeEventListener('click', preventClick);
+          }, 100);
           return true;
         }
         
         // If not focused yet and we haven't exceeded attempts, try again
         if (attempts < maxAttempts) {
-          console.log(`[v-a11y-date-picker] Focus attempt ${attempts} failed, retrying...`);
           setTimeout(forceFocus, 10); // Try again in 10ms
         } else {
-          console.log(`[v-a11y-date-picker] ✗ Failed to focus ${cellType} after ${maxAttempts} attempts`);
-          console.log('[v-a11y-date-picker] Active element is:', document.activeElement);
+          // Cleanup if we failed
+          cellToFocus.removeEventListener('click', preventClick);
         }
       };
       
@@ -140,19 +145,14 @@ export default {
     };
 
     // Function to focus calendar when it opens
-    // This mimics your working code: wait for next tick, then setTimeout
     const focusCalendar = (inputElement) => {
-      console.log('[v-a11y-date-picker] Calendar opened, waiting for DOM...');
-      
       // Clear any existing timeout
       if (focusTimeout) {
         clearTimeout(focusTimeout);
       }
 
-      // Mimic Vue's nextTick by using requestAnimationFrame
-      // This waits for the browser to finish rendering
+      // Wait for the browser to finish rendering
       requestAnimationFrame(() => {
-        // Then add the setTimeout like your working code
         focusTimeout = setTimeout(() => {
           doFocus(inputElement);
         }, delay);
@@ -160,7 +160,6 @@ export default {
     };
 
     // Use MutationObserver to watch for when the calendar appears in DOM
-    // This is more reliable than click/focus events
     const setupCalendarWatcher = (inputElement) => {
       observer = new MutationObserver((mutations) => {
         // Check if a calendar panel appeared
@@ -169,12 +168,10 @@ export default {
         if (panel && !isCalendarOpen) {
           // Calendar just opened!
           isCalendarOpen = true;
-          console.log('[v-a11y-date-picker] Calendar panel detected in DOM');
           focusCalendar(inputElement);
         } else if (!panel && isCalendarOpen) {
           // Calendar closed
           isCalendarOpen = false;
-          console.log('[v-a11y-date-picker] Calendar closed');
           if (focusTimeout) {
             clearTimeout(focusTimeout);
             focusTimeout = null;
@@ -187,8 +184,6 @@ export default {
         childList: true,
         subtree: true
       });
-      
-      console.log('[v-a11y-date-picker] Watching for calendar...');
     };
     
     // Find the actual input element - search deeper for Vue components
@@ -202,7 +197,6 @@ export default {
         inputEl = allInputs[0]; // Get first input
       }
       
-      console.log('[v-a11y-date-picker] Found input element:', inputEl);
       return inputEl || el;
     };
     
@@ -212,9 +206,7 @@ export default {
     setupCalendarWatcher(inputEl);
     
     const handleInputInteraction = () => {
-      console.log('[v-a11y-date-picker] Input interaction detected');
       // The MutationObserver will handle the actual focusing
-      // This is just a fallback trigger
     };
 
     inputEl.addEventListener('focus', handleInputInteraction);
@@ -228,21 +220,15 @@ export default {
     };
     inputEl.addEventListener('keydown', handleKeydown);
 
-    // CRITICAL: Hook into Element Plus's visible-change event
-    // This is the ONLY reliable way - it fires at the exact right moment
-    // We need to add an event listener to the input's aria-expanded changes
-    // or better yet, use MutationObserver on aria-expanded attribute
-    
+    // Watch aria-expanded attribute for perfect timing
     const watchAriaExpanded = () => {
       const ariaObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'attributes' && mutation.attributeName === 'aria-expanded') {
             const isExpanded = inputEl.getAttribute('aria-expanded') === 'true';
-            console.log('[v-a11y-date-picker] aria-expanded changed to:', isExpanded);
             
             if (isExpanded) {
-              // Calendar is now open! This is the perfect timing
-              // Pass the inputEl so we can find the correct calendar panel
+              // Calendar is now open - focus it
               focusCalendar(inputEl);
             }
           }
@@ -253,8 +239,6 @@ export default {
         attributes: true,
         attributeFilter: ['aria-expanded']
       });
-      
-      console.log('[v-a11y-date-picker] Watching aria-expanded attribute on input');
       
       return ariaObserver;
     };

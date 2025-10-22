@@ -1,6 +1,6 @@
 {
   "name": "vue-a11y-directives",
-  "version": "1.1.9",
+  "version": "1.2.0",
   "description": "A comprehensive set of Vue 3 directives for building accessible web applications with WCAG compliance",
   "main": "dist/vue-a11y-directives.cjs.js",
   "module": "dist/vue-a11y-directives.esm.js",
