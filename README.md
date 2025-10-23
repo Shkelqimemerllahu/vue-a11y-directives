@@ -250,7 +250,7 @@ export default {
 
 For complete documentation, examples, and interactive demos, visit:
 - [GitHub Repository](https://github.com/shkelqimemerllahu/vue-a11y-directives)
-- [Live Documentation](https://github.com/shkelqimemerllahu/vue-a11y-directives)
+- [Live Documentation](https://vue-a11y.shkelqimemerllahu.com)
 
 ## 🤝 Contributing
 
