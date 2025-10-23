@@ -12,7 +12,7 @@
         <router-link to="/getting-started" class="btn btn-primary btn-lg">
           Get Started →
         </router-link>
-        <a href="https://github.com/yourusername/vue-a11y-directives" class="btn btn-secondary btn-lg" target="_blank">
+        <a href="https://github.com/shkelqimemerllahu/vue-a11y-directives" class="btn btn-secondary btn-lg" target="_blank">
           View on GitHub
         </a>
       </div>
