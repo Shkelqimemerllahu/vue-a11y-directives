@@ -13,7 +13,7 @@
             <router-link to="/getting-started" class="nav-link">Getting Started</router-link>
             <router-link to="/directives/focus" class="nav-link">Directives</router-link>
             <router-link to="/examples" class="nav-link">Examples</router-link>
-            <a href="https://github.com/yourusername/vue-a11y-directives" class="nav-link" target="_blank">
+            <a href="https://github.com/shkelqimemerllahu/vue-a11y-directives" class="nav-link" target="_blank">
               GitHub
             </a>
           </nav>
